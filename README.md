@@ -116,7 +116,7 @@ npm start
 Backend runs on:
 
 ```
-http://localhost:5000
+http://localhost:3001
 ```
 
 ---
@@ -160,7 +160,7 @@ CORS_ORIGIN=http://localhost:5173
 ### Frontend (.env)
 
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:3001/api
 ```
 
 ---
