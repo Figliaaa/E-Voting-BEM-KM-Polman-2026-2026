@@ -7,6 +7,9 @@
 PEMIRA is a full-stack web-based voting system designed to handle student elections with a focus on **security, reliability, and real-time updates**.
 The system supports both **on-site voting (offline devices)** and **remote access (online users)**.
 
+---
+
+
 Built using a modern stack:
 
 * **Backend:** Node.js (Express)
@@ -14,7 +17,7 @@ Built using a modern stack:
 * **Database:** MySQL
 * **Real-time:** WebSocket (Socket.IO)
 
----
+
 
 ## Key Features
 
