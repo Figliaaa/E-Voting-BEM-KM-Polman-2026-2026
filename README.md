@@ -1,294 +1,166 @@
----
-
-# PEMIRA 2026–2027 Voting System
+# PEMIRA 2026 Voting System
 
 ## Overview
-
-PEMIRA is a full-stack web-based voting system designed to handle student elections with a focus on **security, reliability, and real-time updates**.
-The system supports both **on-site voting (offline devices)** and **remote access (online users)**.
-
----
-
-
-Built using a modern stack:
-
-* **Backend:** Node.js (Express)
-* **Frontend:** React (Vite)
-* **Database:** MySQL
-* **Real-time:** WebSocket (Socket.IO)
-
-
-
-## Key Features
-
-### Voter System
-
-* Secure login using **NIM + unique token**
-* One-vote enforcement (database-level guarantee)
-* Real-time vote submission
-* Interactive voting interface
-* Immediate confirmation after voting
-
-### Admin Panel
-
-* Authentication-protected dashboard
-* Candidate management (CRUD)
-* Voter management & token activation
-* Bulk token activation via CSV
-* Real-time statistics & leaderboard
-
-### System Capabilities
-
-* Handles **2,500+ voters**
-* Real-time vote updates using WebSocket
-* Audit logging for transparency
-* Scalable architecture
+PEMIRA is a full‑stack web‑based voting system designed for student elections at Polman. It focuses on **security**, **reliability**, and **real‑time updates**. Both on‑site (offline devices) and remote (online) voting are supported.
 
 ---
 
 ## Tech Stack
-
-| Layer    | Technology                    |
-| -------- | ----------------------------- |
-| Backend  | Node.js, Express              |
-| Frontend | React, Vite                   |
-| Database | MySQL                         |
-| Auth     | JWT                           |
-| Security | bcrypt, Helmet, Rate Limiting |
-| Realtime | Socket.IO                     |
+| Layer    | Technology |
+| -------- | ---------- |
+| Backend  | Node.js, Express |
+| Frontend | React, Vite |
+| Database | MySQL |
+| Auth     | JWT |
+| Security | bcryptjs, Helmet, Rate Limiting |
+| Realtime | Socket.IO |
 
 ---
 
 ## Project Structure
-
 ```
 project-root/
 │
-├── backend/
-│   ├── server.js
-│   ├── db.js
-│   ├── middleware/
-│   ├── database_setup.sql
-│   └── .env
+├─ backend/
+│   ├─ server.js
+│   ├─ db.js
+│   ├─ middleware/
+│   ├─ database_setup.sql   # schema & seed data
+│   └─ .env                # backend environment variables
 │
-├── frontend/
-│   ├── src/
-│   ├── components/
-│   ├── pages/
-│   └── .env
+├─ frontend/
+│   ├─ src/
+│   ├─ components/
+│   ├─ pages/
+│   └─ .env                # frontend environment variables
 │
-├── COMPLETE_SETUP_GUIDE.md
-├── PROJECT_STATUS.md
-├── QUICK_REFERENCE.md
-└── README.md
+├─ COMPLETE_SETUP_GUIDE.md
+├─ PROJECT_STATUS.md
+├─ QUICK_REFERENCE.md
+└─ README.md
 ```
 
 ---
 
+## Prerequisites
+- **Node.js** ≥ 18
+- **npm** ≥ 9
+- **MySQL** ≥ 5.7 (XAMPP / Laragon works out of the box)
+- **Git** (optional, for version control)
+
+---
+
 ## Installation & Setup
-
-### 1. Database Setup
-
+### 1️⃣ Database Setup
 ```bash
+# Open MySQL client as root
 mysql -u root -p
 ```
-
 ```sql
 CREATE DATABASE db_pemira;
 CREATE USER 'pemira_user'@'localhost' IDENTIFIED BY 'pemira_password123';
 GRANT ALL PRIVILEGES ON db_pemira.* TO 'pemira_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
-
-Import schema:
-
+Import the schema and seed data:
 ```bash
 mysql -u pemira_user -p db_pemira < backend/database_setup.sql
 ```
+> **Tip:** The seed includes an admin account and a few sample voters.
 
----
-
-### 2. Backend Setup
-
+### 2️⃣ Backend Setup
 ```bash
 cd backend
-npm install
-npm start
+npm install      # installs dependencies (bcryptjs replaces native bcrypt)
+npm start          # starts the server on http://localhost:3001
 ```
+The server will automatically load environment variables from `backend/.env`.
 
-Backend runs on:
-
-```
-http://localhost:3001
-```
-
----
-
-### 3. Frontend Setup
-
+### 3️⃣ Frontend Setup
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev       # starts Vite on http://localhost:5173
 ```
-
-Frontend runs on:
-
-```
-http://localhost:5173
-```
+The frontend expects the backend API at `http://localhost:3001` (see `.env` below).
 
 ---
 
 ## Environment Configuration
-
-### Backend (.env)
-
+### Backend (`backend/.env`)
 ```env
+# Database connection
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=pemira_user
 DB_PASSWORD=pemira_password123
 DB_NAME=db_pemira
 
-PORT=5000
+# Server
+PORT=3001               # <-- keep this in sync with README
 NODE_ENV=development
 
+# JWT secrets (change for production!)
 JWT_SECRET_VOTER=your_voter_secret
 JWT_SECRET_ADMIN=your_admin_secret
 
+# CORS – allow the Vite dev server
 CORS_ORIGIN=http://localhost:5173
 ```
-
-### Frontend (.env)
-
+### Frontend (`frontend/.env`)
 ```env
 VITE_API_URL=http://localhost:3001/api
+VITE_WS_URL=http://localhost:3001
 ```
+> **Important:** Never commit these `.env` files to a public repository.
 
 ---
 
 ## Default Credentials (Development Only)
-
-```
-Admin:
+```text
+# Admin
 username: admin
 password: admin123
 
-Voter:
-NIM: 1000000001
-Token: A1B2C3
+# Sample Voter
+NIM: 221001001
+Token: ABC123   (already activated)
 ```
-
-> ⚠️ Change all credentials before production deployment.
+⚠️ Change all credentials before deploying to production.
 
 ---
 
 ## API Overview
+### Voter Endpoints
+- `POST /api/voter/login` – login with NIM & token
+- `POST /api/voter/vote` – cast a vote (requires auth token)
+- `GET /api/voter/status` – check voting status
 
-### Voter
-
-* `POST /api/voter/login`
-* `POST /api/voter/vote`
-* `GET /api/voter/status`
-
-### Admin
-
-* `POST /api/admin/login`
-* `GET /api/admin/candidates`
-* `POST /api/admin/add-candidate`
-* `PUT /api/admin/candidates/:id`
-* `DELETE /api/admin/candidates/:id`
-* `GET /api/admin/voters`
-* `POST /api/admin/activate-token`
-* `POST /api/admin/bulk-activate`
-* `GET /api/admin/statistics`
-
-### Public
-
-* `GET /api/candidates`
-* `GET /api/statistics`
-* `GET /api/health`
+### Admin Endpoints
+- `POST /api/admin/login` – admin login
+- `GET /api/admin/candidates` – list all candidates
+- `POST /api/admin/candidates` – add a candidate
+- `PUT /api/admin/candidates/:id` – update a candidate
+- `DELETE /api/admin/candidates/:id` – remove a candidate
+- `GET /api/admin/voters` – list voters
+- `POST /api/admin/voters/activate` – bulk token activation
 
 ---
 
-## Security Implementation
-
-* JWT-based authentication (separate roles)
-* Password hashing using bcrypt
-* Rate limiting (100 requests / 15 minutes)
-* Input validation (Joi)
-* SQL injection prevention (parameterized queries)
-* CORS configuration
-* Audit logging for all actions
+## Running the Application
+1. Start MySQL (XAMPP/Laragon).
+2. `npm start` in `backend/` → API available at **http://localhost:3001**.
+3. `npm run dev` in `frontend/` → UI available at **http://localhost:5173**.
+4. Open the URL, log in with the sample credentials above, and explore the voting flow.
 
 ---
 
-## Testing
-
-### Voter Flow
-
-1. Login with NIM + Token
-2. Select candidate
-3. Submit vote
-4. Receive confirmation
-
-### Admin Flow
-
-1. Login as admin
-2. Access dashboard
-3. Manage candidates & voters
-4. Monitor real-time voting
+## Known Issues & Tips
+- The project uses **bcryptjs** instead of native `bcrypt` to avoid compilation problems on Windows.
+- If you change the backend port, update `backend/.env` **PORT** and the `VITE_API_URL` / `VITE_WS_URL` in `frontend/.env`.
+- For production, replace JWT secrets, disable the `CORS_ORIGIN=*` fallback, and secure the MySQL credentials.
 
 ---
 
-## Performance & Scalability
-
-* Optimized for **2,500+ concurrent voters**
-* Database indexing applied
-* Connection pooling enabled
-* WebSocket-based efficient updates
-
----
-
-## Deployment Checklist
-
-* [ ] Change default admin credentials
-* [ ] Replace JWT secrets
-* [ ] Enable HTTPS
-* [ ] Configure production database
-* [ ] Set `NODE_ENV=production`
-* [ ] Configure CORS properly
-* [ ] Enable logging & monitoring
-
----
-
-## Project Status
-
-**Status:** Production Ready
-
-* Backend: Complete
-* Frontend: Complete
-* Database: Stable
-* Security: Implemented
-* Real-time Features: Active
-
----
-
-## License
-
-This project is intended for academic and organizational use.
-You may modify and adapt it based on your needs.
-
----
-
-## Author
-
-Developed as a PEMIRA voting solution with focus on:
-
-* Security
-* Real-time interaction
-* Scalability
-* Clean architecture
-
----
+## Contributing
+Feel free to open issues or submit pull requests. When contributing, keep the README up‑to‑date and add appropriate documentation for any new features.
